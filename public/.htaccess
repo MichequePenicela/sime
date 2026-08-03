@@ -1,0 +1,10 @@
+# Bloqueia acesso direto à raiz
+#Order allow,deny
+#Deny from all
+
+RewriteEngine On
+
+#Redireciona tudo para public/
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [L]

@@ -1,0 +1,9 @@
+# Bloqueia acesso direto à raiz
+Order allow,deny
+Deny from all
+
+RewriteEngine On
+
+# Redireciona tudo para public/
+RewriteCond %{REQUEST_URI} !^/public/
+RewriteRule ^(.*)$ public/$1 [L]

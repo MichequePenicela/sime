@@ -1,0 +1,150 @@
+<head>
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/jquery/flatpickr.min.css">
+</head>
+<div class="container-fluid py-4">
+
+  <!-- TÍTULO -->
+  <div class="mb-4">
+    <h4 class="fw-bold mb-0">Gerar Relatório</h4>
+    <small class="text-muted">
+      Gere relatórios financeiros e administrativos do sistema
+    </small>
+  </div>
+
+  <!-- SELEÇÃO DO RELATÓRIO -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-light fw-semibold">
+      Selecionar relatório
+    </div>
+
+    <div class="card-body">
+      <form id="formGerarRelatorio" method="POST">
+        <div class="row g-3 align-items-end">
+
+          <div class="col-md-6">
+            <label class="form-label">Relatório</label>
+            <select name="slug" class="form-select" required>
+              <option selected disabled>Selecione um relatório</option>
+              <?php foreach ($relatorios as $r): ?>
+                <option value="<?= htmlspecialchars($r['slug']) ?>">
+                  <?= htmlspecialchars($r['nome']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Formato de saída</label>
+            <select name="formato" class="form-select" required>
+              <option value="xlsx">Excel (.xlsx)</option>
+              <option value="pdf" disabled>PDF (em breve)</option>
+            </select>
+          </div>
+
+        </div>
+
+        <div class="row g-3 mt-3">
+          <div class="col-md-6">
+            <label class="form-label">Data inicial</label>
+            <input type="text" name="data_inicio" class="form-control datepicker">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Data final</label>
+            <input type="text" name="data_fim" class="form-control datepicker">
+          </div>
+        </div>
+
+        <!-- BOTÃO -->
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <button type="reset" class="btn btn-outline-secondary">Limpar filtros</button>
+          <button type="submit" class="btn btn-outline-success">
+            <i class="bi bi-file-earmark-excel"></i> Gerar relatório
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- HISTÓRICO DE RELATÓRIOS -->
+  <div class="card shadow-sm mt-5">
+    <div class="card-header bg-white fw-semibold">
+      Relatórios gerados recentemente
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Relatório</th>
+            <th>Período</th>
+            <th>Formato</th>
+            <th>Gerado em</th>
+            <th class="text-end">Ação</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php if (empty($relatoriosGerados)): ?>
+            <tr>
+              <td colspan="5" class="text-center text-muted py-4">
+                Nenhum relatório gerado recentemente
+              </td>
+            </tr>
+          <?php else: ?>
+            <?php foreach ($relatoriosGerados as $g): ?>
+              <tr>
+                <td><?= htmlspecialchars($g['nome']) ?></td>
+                <td>
+                  <?= ($g['data_inicio'] ?? '-') ?> – <?= ($g['data_fim'] ?? '-') ?>
+                </td>
+                <td><?= strtoupper($g['formato']) ?></td>
+                <td><?= date('d/m/Y H:i', strtotime($g['gerado_em'])) ?></td>
+                <td class="text-end">
+                  <a href="/relatorios/download/<?= $g['id'] ?>" class="btn btn-sm btn-outline-primary">
+                    Download
+                  </a>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          <?php endif; ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script src="<?= BASE_URL ?>/assets/js/jquery/jquery-3.6.0.min.js"></script>
+<script src="<?= BASE_URL ?>/assets/js/jquery/flatpickr.js"></script>
+<script>
+/* ======================================================
+ * FLATPICKR
+ * ====================================================== */
+// ---------- FLATPICKR ----------
+    $(".datepicker").flatpickr({
+    dateFormat: "d-m-Y",
+    allowInput: true
+});
+
+
+document.getElementById('formGerarRelatorio').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const formData = new FormData(this);
+
+  fetch('<?= BASE_URL ?>/relatorios/run', {
+    method: 'POST',
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    if(data.success){
+      alert('Relatório gerado com sucesso!');
+      location.reload();
+    } else {
+      alert('Erro: ' + data.error);
+    }
+  })
+  .catch(err => console.error(err));
+});
+
+</script>
